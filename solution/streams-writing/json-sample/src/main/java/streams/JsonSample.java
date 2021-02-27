@@ -51,7 +51,6 @@ public class JsonSample {
         final Serde<String> stringSerde = Serdes.String();
         final Serde<TempReading> temperatureSerde = getJsonSerde();
 
-        // TODO: here we construct the Kafka Streams topology
         builder.stream("temperatures-topic", Consumed.with(stringSerde, temperatureSerde))
             .filter((key,value) -> value.temperature > 25)
             .to("high-temperatures-topic", Produced.with(stringSerde, temperatureSerde));
@@ -61,7 +60,6 @@ public class JsonSample {
     }
 
     private static Serde<TempReading> getJsonSerde(){
-        // TODO: create the JSON serde
         Map<String, Object> serdeProps = new HashMap<>();
         serdeProps.put("json.value.type", TempReading.class);
 
