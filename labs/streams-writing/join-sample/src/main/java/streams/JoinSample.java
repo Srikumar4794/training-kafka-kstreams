@@ -9,11 +9,7 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.JoinWindows;
-import org.apache.kafka.streams.kstream.StreamJoined;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.*;
 
 public class JoinSample {
     final static String APPLICATION_ID = "join-sample-v0.1.0";
@@ -35,7 +31,14 @@ public class JoinSample {
         final Serde<String> stringSerde = Serdes.String();
 
         // TODO: here we construct the Kafka Streams topology
+        KStream<String, String> leftStream = builder.stream("left-topic", Consumed.with(stringSerde, stringSerde));
+        KStream<String, String> rightStream = builder.stream("right-topic", Consumed.with(stringSerde, stringSerde));
 
+        leftStream.join(rightStream, (leftValue, rightValue) -> "[" + leftValue + "," + rightValue + "]",
+            JoinWindows.of(Duration.ofMinutes(5)), Joined
+                .with(stringSerde, stringSerde, stringSerde)).to("joined-topic", Produced.with(stringSerde, stringSerde));
+
+        return builder.build();
     }
 
     private static Properties getConfig(){
