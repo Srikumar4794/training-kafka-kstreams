@@ -30,7 +30,6 @@ public class JoinSample {
 
         final Serde<String> stringSerde = Serdes.String();
 
-        // TODO: here we construct the Kafka Streams topology
         KStream<String, String> leftStream = builder.stream("left-topic", Consumed.with(stringSerde, stringSerde));
         KStream<String, String> rightStream = builder.stream("right-topic", Consumed.with(stringSerde, stringSerde));
 
