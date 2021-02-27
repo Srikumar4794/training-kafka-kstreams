@@ -33,9 +33,9 @@ public class JoinSample {
         KStream<String, String> leftStream = builder.stream("left-topic", Consumed.with(stringSerde, stringSerde));
         KStream<String, String> rightStream = builder.stream("right-topic", Consumed.with(stringSerde, stringSerde));
 
-        leftStream.join(rightStream, (leftValue, rightValue) -> "[" + leftValue + "," + rightValue + "]",
-            JoinWindows.of(Duration.ofMinutes(5)), Joined
-                .with(stringSerde, stringSerde, stringSerde)).to("joined-topic", Produced.with(stringSerde, stringSerde));
+        KTable<String, String> rightTable = rightStream.toTable();
+
+        leftStream.leftJoin(rightTable, (leftStreamVal, rightTableVal) -> "[" + leftStreamVal + "," + rightTableVal + "]").to("joined-topic", Produced.with(stringSerde, stringSerde));
 
         return builder.build();
     }
