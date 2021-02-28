@@ -19,6 +19,7 @@ public class WordCountTransformer implements Transformer<String, String, KeyValu
     context.schedule(
         Duration.ofMillis(5_000),
         PunctuationType.STREAM_TIME,
+        //iterates through the entries in the key-value store at that particular time(stamp) and prints it out
         timestamp -> {
           KeyValueIterator<String, Long> iter = kvStore.all();
           System.out.println("------ " + context.taskId() + " - " + timestamp + " -----" + " ");
@@ -34,9 +35,16 @@ public class WordCountTransformer implements Transformer<String, String, KeyValu
   @Override
   public KeyValue<String, Long> transform(String word, String dummy) {
     // TODO: Get the correct entry from the keystore and update it or create an intial entry
-    return null;
+      //create initial entry if absent.
+      this.kvStore.putIfAbsent(word, 0L);
+      this.kvStore.put(word, this.kvStore.get(word) + 1);
+      return new KeyValue<>(word, this.kvStore.get(word));
   }
 
   @Override
-  public void close() {}
+  public void close() {
+      KeyValueIterator<String, Long> iter = this.kvStore.all();
+      while(iter.hasNext())
+        this.kvStore.delete(iter.next().key);
+  }
 }
